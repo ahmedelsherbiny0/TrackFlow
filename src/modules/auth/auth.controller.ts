@@ -4,14 +4,13 @@ import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { GuestGuard } from '../../common/guards/guest.guard';
 import { AuthGuard } from '../../common/guards/auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
 import { LoginAuthDto } from './dto/login-auth.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(GuestGuard)
   @Post('register')
   async register(
     @Body() createAuthDto: CreateAuthDto,
