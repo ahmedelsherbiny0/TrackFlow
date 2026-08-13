@@ -5,6 +5,6 @@ export const DATABASE_CONFIG = {
   username: 'postgres',
   password: '1234',
   database: 'trackflow',
-  entities: [__dirname + '/**/*.entity{.ts,.js}'],
+  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   synchronize: true,
 };
