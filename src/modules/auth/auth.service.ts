@@ -54,11 +54,13 @@ export class AuthService {
     let existingUser: User | null = null;
 
     if (loginAuthDto.username) {
-      existingUser = await this.usersService.findOneByUsername(
+      existingUser = await this.usersService.findForLoginByUsername(
         loginAuthDto.username,
       );
     } else if (loginAuthDto.email) {
-      existingUser = await this.usersService.findOneByEmail(loginAuthDto.email);
+      existingUser = await this.usersService.findForLoginByEmail(
+        loginAuthDto.email,
+      );
     } else {
       throw new BadRequestException('Username or email is required');
     }
