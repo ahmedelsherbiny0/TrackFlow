@@ -6,9 +6,9 @@ import {
 } from 'typeorm';
 
 export enum UserRole {
-  ADMIN = 'Admin',
-  MENTOR = 'Mentor',
-  ROOKIE = 'Rookie',
+  ADMIN = 'admin',
+  MENTOR = 'mentor',
+  ROOKIE = 'rookie',
 }
 
 @Entity('users')
@@ -28,7 +28,7 @@ export class User {
   @Column({ unique: true })
   email!: string;
 
-  @Column()
+  @Column({ select: false })
   password!: string;
 
   @Column({
