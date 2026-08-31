@@ -1,45 +1,52 @@
 import {
   Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
   Param,
   Delete,
+  ParseUUIDPipe,
+  Get,
+  UseGuards,
+  Req,
+  Post,
+  Body,
 } from '@nestjs/common';
 import { AssignmentsService } from './assignments.service';
-import { CreateAssignmentDto } from './dto/create-assignment.dto';
+import { AuthGuard } from '../../common/guards/auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { User, UserRole } from '../users/entities/user.entity';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 
 @Controller('assignments')
 export class AssignmentsController {
   constructor(private readonly assignmentsService: AssignmentsService) {}
 
-  @Post()
-  create(@Body() createAssignmentDto: CreateAssignmentDto) {
-    return this.assignmentsService.create(createAssignmentDto);
+  @Get(':assignmentId')
+  findOne(@Param('assignmentId', ParseUUIDPipe) assignmentId: string) {
+    return this.assignmentsService.findOne(assignmentId);
   }
 
-  @Get()
-  findAll() {
-    return this.assignmentsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.assignmentsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
+  @Post(':assignmentId')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MENTOR)
+  async update(
+    @Param('assignmentId', ParseUUIDPipe) assignmentId: string,
     @Body() updateAssignmentDto: UpdateAssignmentDto,
+    @Req() req: Request & { user: User },
   ) {
-    return this.assignmentsService.update(+id, updateAssignmentDto);
+    return this.assignmentsService.update(
+      assignmentId,
+      updateAssignmentDto,
+      req.user,
+    );
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.assignmentsService.remove(+id);
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MENTOR)
+  @Delete(':assignmentId')
+  remove(
+    @Param('assignmentId', ParseUUIDPipe) assignmentId: string,
+    @Req() req: Request & { user: User },
+  ) {
+    return this.assignmentsService.remove(assignmentId, req.user);
   }
 }

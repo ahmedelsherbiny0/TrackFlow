@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -11,6 +12,9 @@ import { TrackMentor } from './entities/track_mentors.entity';
 import { Repository } from 'typeorm';
 import { User, UserRole } from '../users/entities/user.entity';
 import { TrackRookie } from './entities/track_rookies.entity';
+import { CreateAssignmentDto } from '../assignments/dto/create-assignment.dto';
+import { Assignment } from '../assignments/entities/assignment.entity';
+import { AssignmentsService } from '../assignments/assignments.service';
 
 @Injectable()
 export class TracksService {
@@ -23,6 +27,8 @@ export class TracksService {
 
     @InjectRepository(TrackRookie)
     private readonly trackRookieRepository: Repository<TrackRookie>,
+
+    private readonly assignmentsService: AssignmentsService,
   ) {}
 
   async findAllTracks() {
@@ -172,5 +178,31 @@ export class TracksService {
     return this.trackRookieRepository.findOne({
       where: { rookie_id: rookie.id, track_id: track.id },
     });
+  }
+
+  async createAssignment(
+    track: Track,
+    createAssignmentDto: CreateAssignmentDto,
+    mentor: User,
+  ): Promise<Assignment> {
+    const isMentorAssigned = await this.checkExistingMentor(track, mentor);
+
+    if (!isMentorAssigned) {
+      throw new ForbiddenException(
+        `You are not authorized to create an assignment for this track`,
+      );
+    }
+
+    const deadline = new Date(createAssignmentDto.deadline);
+
+    if (deadline <= new Date()) {
+      throw new BadRequestException(`Deadline must be a future date`);
+    }
+
+    return await this.assignmentsService.create(
+      createAssignmentDto,
+      track,
+      mentor,
+    );
   }
 }

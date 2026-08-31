@@ -22,13 +22,13 @@ export class Assignment {
   @JoinColumn({ name: 'created_by_id' })
   mentor!: User;
 
-  @Column({ nullable: true })
+  @Column()
   name!: string;
 
   @Column({ nullable: true })
   description!: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp with time zone' })
   deadline!: Date;
 
   @CreateDateColumn({ name: 'created_at' })
