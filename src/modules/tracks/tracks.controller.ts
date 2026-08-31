@@ -22,11 +22,16 @@ import { CreateTrackDto } from './dto/create-track.dto';
 import { TrackByNamePipe } from './pipes/track-by-name.pipe';
 import { MentorByUsernamePipe } from './pipes/mentor-by-username.pipe';
 import { RookieByUsernamePipe } from './pipes/rookie-by-username.pipe';
+import { AssignmentsService } from '../assignments/assignments.service';
+import { CreateAssignmentDto } from '../assignments/dto/create-assignment.dto';
 
 @Controller('tracks')
 @UseInterceptors(ClassSerializerInterceptor)
 export class TracksController {
-  constructor(private readonly tracksService: TracksService) {}
+  constructor(
+    private readonly tracksService: TracksService,
+    private readonly assignmentsService: AssignmentsService,
+  ) {}
 
   @Get()
   findAllTracks() {
@@ -109,5 +114,25 @@ export class TracksController {
     @Param('trackName', TrackByNamePipe) track: Track,
   ): Promise<User[]> {
     return await this.tracksService.getRookiesInTrack(track);
+  }
+
+  @Get(':trackName/assignments')
+  getAssignmentsInTrack(@Param('trackName', TrackByNamePipe) track: Track) {
+    return this.assignmentsService.findAll(track);
+  }
+
+  @Post(':trackName/assignments')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.MENTOR)
+  async createAssignmentInTrack(
+    @Param('trackName', TrackByNamePipe) track: Track,
+    @Body() createAssignmentDto: CreateAssignmentDto,
+    @Req() req: Request & { user: User },
+  ) {
+    return await this.tracksService.createAssignment(
+      track,
+      createAssignmentDto,
+      req.user,
+    );
   }
 }
